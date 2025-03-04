@@ -1,0 +1,551 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HTTPie Export Format",
+  "description": "Export of all data from the HTTPie client",
+  "type": "object",
+  "definitions": {
+    "HTTPieMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "httpie",
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "contentType": {
+          "enum": [
+            "workspace",
+            "collection",
+            "request",
+            "environment"
+          ],
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "docs": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "contentType"
+      ],
+      "type": "object"
+    },
+    "BaseAuth": {
+      "properties": {
+        "credentials": {
+          "additionalProperties": false,
+          "properties": {
+            "password": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "username",
+            "password"
+          ],
+          "type": "object"
+        },
+        "target": {
+          "$ref": "#/definitions/AuthTarget"
+        }
+      },
+      "type": "object"
+    },
+    "Auth": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BaseAuth"
+        },
+        {
+          "properties": {
+            "type": {
+              "$ref": "#/definitions/AuthTypeWithoutInherited"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "AuthWithInherited": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BaseAuth"
+        },
+        {
+          "properties": {
+            "type": {
+              "$ref": "#/definitions/AuthType"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "AuthTarget": {
+      "enum": [
+        "headers",
+        "params"
+      ],
+      "type": "string"
+    },
+    "AuthType": {
+      "enum": [
+        "none",
+        "basic",
+        "bearer",
+        "apiKey",
+        "inherited"
+      ],
+      "type": "string"
+    },
+    "AuthTypeWithoutInherited": {
+      "enum": [
+        "none",
+        "basic",
+        "bearer",
+        "apiKey"
+      ],
+      "type": "string"
+    },
+    "Collection": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "$ref": "#/definitions/Auth"
+        },
+        "icon": {
+          "$ref": "#/definitions/IconConfig"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "requests": {
+          "items": {
+            "$ref": "#/definitions/Request"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "auth",
+        "requests"
+      ],
+      "type": "object"
+    },
+    "Color": {
+      "enum": [
+        "gray",
+        "green",
+        "pink",
+        "blue",
+        "red",
+        "orange",
+        "purple",
+        "aqua",
+        "yellow"
+      ],
+      "type": "string"
+    },
+    "Environment": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "id": {
+          "type": "string"
+        },
+        "isDefault": {
+          "type": "boolean"
+        },
+        "isLocalOnly": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "$ref": "#/definitions/Variable"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "isDefault",
+        "isLocalOnly",
+        "variables"
+      ],
+      "type": "object"
+    },
+    "IconConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "$ref": "#/definitions/Color"
+        },
+        "name": {
+          "$ref": "#/definitions/IconName"
+        }
+      },
+      "required": [
+        "name",
+        "color"
+      ],
+      "type": "object"
+    },
+    "IconName": {
+      "enum": [
+        "default",
+        "circle",
+        "triangle",
+        "square",
+        "rhombus",
+        "hexagon",
+        "heart",
+        "star",
+        "thumbUp",
+        "rocket",
+        "cloud",
+        "bulb",
+        "diamond",
+        "lock",
+        "wrench",
+        "hammer",
+        "flame",
+        "monitor",
+        "mobile",
+        "globe",
+        "database",
+        "creditCard",
+        "paperPencil",
+        "bubble"
+      ],
+      "type": "string"
+    },
+    "List": {
+      "items": {
+        "$ref": "#/definitions/ListItem"
+      },
+      "type": "array"
+    },
+    "ListItem": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "enabled"
+      ],
+      "type": "object"
+    },
+    "Request": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "$ref": "#/definitions/AuthWithInherited"
+        },
+        "body": {
+          "$ref": "#/definitions/RequestBody"
+        },
+        "headers": {
+          "$ref": "#/definitions/List"
+        },
+        "id": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "queryParams": {
+          "$ref": "#/definitions/List"
+        },
+        "pathParams": {
+          "$ref": "#/definitions/List"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "method",
+        "headers",
+        "queryParams",
+        "pathParams",
+        "auth",
+        "body"
+      ],
+      "type": "object"
+    },
+    "RequestBodyType": {
+      "enum": [
+        "none",
+        "text",
+        "form",
+        "graphql",
+        "file"
+      ],
+      "type": "string"
+    },
+    "RequestBody": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/RequestBodyType"
+        },
+        "form": {
+          "$ref": "#/definitions/RequestBodyForm"
+        },
+        "text": {
+          "$ref": "#/definitions/RequestBodyText"
+        },
+        "graphql": {
+          "$ref": "#/definitions/RequestBodyGraphQL"
+        },
+        "file": {
+          "$ref": "#/definitions/RequestBodyFile"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "RequestBodyForm": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/RequestBodyFormItem"
+          },
+          "type": "array"
+        },
+        "isMultipart": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isMultipart",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "RequestBodyFormItem": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "file": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/RequestBodyFormItemType"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "name",
+        "type"
+      ],
+      "type": "object"
+    },
+    "RequestBodyFormItemType": {
+      "enum": [
+        "text",
+        "file",
+        "filetext"
+      ],
+      "type": "string"
+    },
+    "RequestBodyText": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "$ref": "#/definitions/RequestMimeType"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "value"
+      ],
+      "type": "object"
+    },
+    "RequestBodyGraphQL": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "variables": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "variables"
+      ],
+      "type": "object"
+    },
+    "RequestBodyFile": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "RequestMimeType": {
+      "enum": [
+        "text/plain",
+        "application/json",
+        "application/xml",
+        "text/yaml"
+      ],
+      "type": "string"
+    },
+    "Variable": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "isSecret": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "isSecret"
+      ],
+      "type": "object"
+    },
+    "Workspace": {
+      "additionalProperties": false,
+      "properties": {
+        "collections": {
+          "items": {
+            "$ref": "#/definitions/Collection"
+          },
+          "type": "array"
+        },
+        "environments": {
+          "items": {
+            "$ref": "#/definitions/Environment"
+          },
+          "type": "array"
+        },
+        "drafts": {
+          "items": {
+            "$ref": "#/definitions/Request"
+          },
+          "type": "array"
+        },
+        "icon": {
+          "$ref": "#/definitions/IconConfig"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "collections",
+        "drafts",
+        "environments"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "meta": {
+      "$ref": "#/definitions/HTTPieMeta"
+    },
+    "entry": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/Collection"
+        },
+        {
+          "$ref": "#/definitions/Request"
+        },
+        {
+          "$ref": "#/definitions/Workspace"
+        },
+        {
+          "$ref": "#/definitions/Environment"
+        }
+      ],
+      "type": "object"
+    }
+  }
+}
